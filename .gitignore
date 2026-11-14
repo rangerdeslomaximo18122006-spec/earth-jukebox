@@ -1,18 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+
+# Datos pesados y medios
 data/raw/*
 !data/raw/.gitkeep
 *.mp4
 *.avi
 *.mov
 frames/
-__pycache__/
-*.pyc
-.venv/
-venv/
-*.aux
+
+# Salidas y temporales
 *.log
 *.out
 *.toc
 *.synctex.gz
+
+# Sistema
 .DS_Store
 Thumbs.db
+
+# Editores
 .vscode/
+
+
