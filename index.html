@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Himno de Jörð — Consola de Sonificación Climática | NASA Space Apps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :focus-visible {
+      outline: 3px solid #38BDF8 !important;
+      outline-offset: 3px !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    html, body {
+      background: radial-gradient(circle at 50% 15%, #081b33 0%, #030a14 55%, #010408 100%) !important;
+      background-attachment: fixed !important;
+      min-height: 100vh;
+    }
+    .panel-glass {
+      background: rgba(8, 20, 38, 0.82);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans antialiased selection:bg-sky-400 selection:text-slate-950 relative overflow-x-hidden">
+
+  <!-- FONDO DE ESTRELLAS Y PARTÍCULAS -->
+  <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-45"></canvas>
+
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-sky-400 focus:text-slate-950 focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg">
+    Saltar al contenido principal
+  </a>
+
+  <!-- ENCABEZADO SUPERIOR -->
+  <header class="relative z-10 border-b border-sky-500/20 bg-slate-950/85 backdrop-blur-xl px-6 py-3.5 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      
+      <!-- LOGO Y TÍTULO -->
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-sky-600 flex items-center justify-center shadow-[0_0_15px_rgba(56,189,248,0.4)]">
+          🌱
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-wider text-white font-mono uppercase">Himno de Jörð</h1>
+            <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono">NASA</span>
+          </div>
+          <p class="text-[11px] text-sky-200/70 font-mono">Telemetría y Clima Satelital en Tiempo Real</p>
+        </div>
+      </div>
+
+      <!-- MENÚ DE NAVEGACIÓN -->
+      <nav class="flex items-center gap-2 bg-slate-900/90 border border-sky-500/20 rounded-xl px-3 py-1.5 shadow-inner">
+        <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-mono font-semibold border border-sky-500/40 cursor-pointer">
+          <span>📊</span> Dashboard
+        </button>
+        <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs font-mono transition cursor-pointer">
+          <span>📋</span> Historial
+        </button>
+      </nav>
+
+      <!-- ESTADO Y PERFIL -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex flex-col items-end">
+          <div class="flex items-center gap-1.5 text-xs font-mono text-emerald-400 font-medium">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> En línea
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Fuentes: NASA POWER, NOAA, NSIDC</span>
+        </div>
+        <div class="h-9 w-9 rounded-full bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300">
+          👤
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <main id="main-content" class="relative z-10 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- SECCIÓN IZQUIERDA: ESPECTRÓMETRO Y VISTAS INTERCAMBIABLES -->
+    <section aria-labelledby="visual-heading" class="lg:col-span-7 panel-glass rounded-2xl p-6 flex flex-col justify-between gap-6 shadow-2xl">
+      <div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-sky-400">📊</span>
+            <!-- TÍTULO ACTUALIZADO SIN LA REFERENCIA DE TIEMPO -->
+            <h2 id="visual-heading" class="text-sm font-bold uppercase tracking-wider text-sky-300 font-mono">Espectrómetro & Audio Integrado</h2>
+          </div>
+          <span id="harmony-badge" class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+            ● Estado: Óptimo (Consonante)
+          </span>
+        </div>
+
+        <!-- PESTAÑAS INTERNAS -->
+        <div class="flex items-center gap-2 mb-4">
+          <button id="tab-viz" type="button" class="px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-mono text-xs font-bold shadow transition cursor-pointer">Visualización</button>
+          <button id="tab-data" type="button" class="px-3 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-800 font-mono text-xs border border-sky-500/20 transition cursor-pointer">Datos</button>
+          <button id="tab-ai" type="button" class="px-3 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-800 font-mono text-xs border border-sky-500/20 transition cursor-pointer">Análisis IA</button>
+        </div>
+
+        <!-- CONTENEDOR DE VISTAS CON SCROLL FLEXIBLE -->
+        <div class="relative w-full rounded-xl overflow-y-auto max-h-[250px] bg-slate-950 border border-sky-500/30 p-5 shadow-2xl">
+          <div class="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:20px_20px] opacity-15 pointer-events-none"></div>
+
+          <!-- VISTA 1: GRÁFICO DE BARRAS Y LEDS -->
+          <div id="view-visualization" class="relative z-10 flex flex-col justify-between h-full min-h-[180px]">
+            <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2 border-b border-slate-800 pb-1">
+              <span>LED Estado</span><span>Espectro (% de Variación)</span><span>Métricas en Vivo</span>
+            </div>
+            <div aria-hidden="true" class="grid grid-cols-5 gap-3 items-end h-36 pt-2 px-1 relative">
+              
+              <!-- Pista 1 -->
+              <div class="flex flex-col items-center gap-1 h-full justify-end relative">
+                <span id="led-1" class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1"></span>
+                <span id="val-capa-1" class="text-[10px] font-mono font-bold text-amber-300 min-h-[1.2rem] text-center">+1.4%</span>
+                <div class="w-full h-24 bg-slate-900/80 rounded-t-sm relative overflow-hidden flex items-end">
+                  <div id="bar-capa-1" class="w-full bg-amber-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#fbbf24]" style="height: 52%;"></div>
+                </div>
+                <span class="text-[9px] font-mono uppercase text-slate-400">Pista 1</span>
+              </div>
+
+              <!-- Pista 2 -->
+              <div class="flex flex-col items-center gap-1 h-full justify-end relative">
+                <span id="led-2" class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1"></span>
+                <span id="val-capa-2" class="text-[10px] font-mono font-bold text-emerald-300 min-h-[1.2rem] text-center">+3.2%</span>
+                <div class="w-full h-24 bg-slate-900/80 rounded-t-sm relative overflow-hidden flex items-end">
+                  <div id="bar-capa-2" class="w-full bg-emerald-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#34d399]" style="height: 64%;"></div>
+                </div>
+                <span class="text-[9px] font-mono uppercase text-slate-400">Pista 2</span>
+              </div>
+
+              <!-- Pista 3 -->
+              <div class="flex flex-col items-center gap-1 h-full justify-end relative">
+                <span id="led-3" class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1"></span>
+                <span id="val-capa-3" class="text-[10px] font-mono font-bold text-sky-300 min-h-[1.2rem] text-center">-4.1%</span>
+                <div class="w-full h-24 bg-slate-900/80 rounded-t-sm relative overflow-hidden flex items-end">
+                  <div id="bar-capa-3" class="w-full bg-sky-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#38bdf8]" style="height: 70%;"></div>
+                </div>
+                <span class="text-[9px] font-mono uppercase text-slate-400">Pista 3</span>
+              </div>
+
+              <!-- Pista 4 -->
+              <div class="flex flex-col items-center gap-1 h-full justify-end relative">
+                <span id="led-4" class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1"></span>
+                <span id="val-capa-4" class="text-[10px] font-mono font-bold text-indigo-300 min-h-[1.2rem] text-center">+0.8%</span>
+                <div class="w-full h-24 bg-slate-900/80 rounded-t-sm relative overflow-hidden flex items-end">
+                  <div id="bar-capa-4" class="w-full bg-indigo-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#818cf8]" style="height: 45%;"></div>
+                </div>
+                <span class="text-[9px] font-mono uppercase text-slate-400">Pista 4</span>
+              </div>
+
+              <!-- Pista 5 -->
+              <div class="flex flex-col items-center gap-1 h-full justify-end relative">
+                <span id="led-5" class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1"></span>
+                <span id="val-capa-5" class="text-[10px] font-mono font-bold text-lime-300 min-h-[1rem] text-center">-1.5%</span>
+                <div class="w-full h-24 bg-slate-900/80 rounded-t-sm relative overflow-hidden flex items-end">
+                  <div id="bar-capa-5" class="w-full bg-lime-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#bef264]" style="height: 58%;"></div>
+                </div>
+                <span class="text-[9px] font-mono uppercase text-slate-400">Pista 5</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- VISTA 2: DATOS TÉCNICOS -->
+          <div id="view-data" class="hidden relative z-10 font-mono text-xs space-y-2 text-slate-300">
+            <p class="text-sky-400 font-bold border-b border-sky-500/30 pb-1">⚡ Fuentes Científicas Oficiales:</p>
+            <p>• <strong class="text-amber-300">Capa 1:</strong> NASA POWER API (San José, CR).</p>
+            <p>• <strong class="text-emerald-300">Capa 2:</strong> NOAA Mauna Loa Observatory (CO₂).</p>
+            <p>• <strong class="text-sky-300">Capa 3:</strong> NSIDC (Hielo Ártico).</p>
+            <p>• <strong class="text-indigo-300">Capa 4:</strong> NASA POWER API (Precipitación).</p>
+            <p>• <strong class="text-lime-300">Capa 5:</strong> NASA MODIS Terra/Aqua (NDVI).</p>
+          </div>
+
+          <!-- VISTA 3: ANÁLISIS DE INTELIGENCIA ARTIFICIAL -->
+          <div id="view-ai" class="hidden relative z-10 font-mono text-xs space-y-3 text-slate-300">
+            <p class="text-emerald-400 font-bold border-b border-emerald-500/30 pb-1">🤖 Reporte del Modelo Neuronal:</p>
+            <div id="ai-report-content" class="space-y-1.5 text-slate-200">
+              <p>• <strong class="text-slate-100">Estado General:</strong> Secuencia armónica basada en los patrones de sonido.</p>
+              <p>• <strong class="text-slate-100">Diagnóstico IA:</strong> Sincronización exacta en bucle continuo.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FEEDBACK DE ACCESIBILIDAD -->
+      <div class="bg-slate-950/90 border border-sky-500/20 rounded-xl p-3.5 shadow-inner flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-mono uppercase text-sky-400">Feedback de Accesibilidad</p>
+          <div id="live-description" aria-live="polite" aria-atomic="true" class="text-xs text-slate-200 font-mono">
+            Sistema listo. Reproduzca el modo climático.
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-toggle-voice" type="button" class="px-2.5 py-1 rounded bg-slate-900 border border-sky-500/30 text-sky-300 text-[11px] font-mono cursor-pointer">Voz: Activa</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DERECHA: CONTROL, REPRODUCIR, DETENER Y VOLUMEN -->
+    <aside aria-labelledby="controls-heading" class="lg:col-span-5 panel-glass rounded-2xl p-6 flex flex-col gap-5 shadow-2xl">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-sky-400">🎛️</span>
+          <h2 id="controls-heading" class="text-sm font-mono uppercase font-bold text-sky-300">Control & Telemetría</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-play-pause"
+            type="button"
+            class="py-2 px-3 rounded-xl bg-sky-400 hover:bg-sky-300 text-slate-950 font-mono font-bold text-xs shadow transition cursor-pointer"
+          >
+            ▶ Reproducir
+          </button>
+          <button
+            id="btn-stop"
+            type="button"
+            disabled
+            class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-mono font-bold text-xs border border-slate-700 transition cursor-not-allowed"
+          >
+            ⏹ Detener
+          </button>
+        </div>
+      </div>
+
+      <!-- CANALES DE AUDIO CON CHECKBOX Y VOLUMEN -->
+      <fieldset class="border-t border-sky-500/20 pt-3">
+        <legend class="text-xs font-mono uppercase font-semibold text-sky-300 mb-2">Canales de Audio y Volumen (Pistas 1–5)</legend>
+
+        <div class="space-y-2">
+          
+          <!-- Pista 1 -->
+          <div class="p-2.5 rounded-xl bg-slate-950/85 border border-sky-500/20 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" name="layer" data-capa="1" checked class="h-4 w-4 accent-amber-400 rounded cursor-pointer" />
+                <span class="text-xs font-mono font-bold text-slate-100">Pista 1: Temperatura (San José)</span>
+              </label>
+              <span class="text-[10px] font-mono text-amber-400">[Tecla 1]</span>
+            </div>
+            <div class="flex items-center gap-2 px-1">
+              <span class="text-[10px] font-mono text-slate-400">Vol</span>
+              <input type="range" id="volumenCapa1" min="0" max="100" value="70" class="w-full accent-amber-400 cursor-pointer" />
+            </div>
+          </div>
+
+          <!-- Pista 2 -->
+          <div class="p-2.5 rounded-xl bg-slate-950/85 border border-emerald-500/40 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" name="layer" data-capa="2" checked class="h-4 w-4 accent-emerald-400 rounded cursor-pointer" />
+                <span class="text-xs font-mono font-bold text-slate-100">Pista 2: CO₂ Global (Hawái) ⚡</span>
+              </label>
+              <span class="text-[10px] font-mono text-emerald-400">[Tecla 2]</span>
+            </div>
+            <div class="flex items-center gap-2 px-1">
+              <span class="text-[10px] font-mono text-slate-400">Vol</span>
+              <input type="range" id="volumenCapa2" min="0" max="100" value="60" class="w-full accent-emerald-400 cursor-pointer" />
+            </div>
+          </div>
+
+          <!-- Pista 3 -->
+          <div class="p-2.5 rounded-xl bg-slate-950/85 border border-sky-500/20 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" name="layer" data-capa="3" checked class="h-4 w-4 accent-sky-400 rounded cursor-pointer" />
+                <span class="text-xs font-mono font-bold text-slate-100">Pista 3: Hielo Ártico (NSIDC)</span>
+              </label>
+              <span class="text-[10px] font-mono text-sky-400">[Tecla 3]</span>
+            </div>
+            <div class="flex items-center gap-2 px-1">
+              <span class="text-[10px] font-mono text-slate-400">Vol</span>
+              <input type="range" id="volumenCapa3" min="0" max="100" value="65" class="w-full accent-sky-400 cursor-pointer" />
+            </div>
+          </div>
+
+          <!-- Pista 4 -->
+          <div class="p-2.5 rounded-xl bg-slate-950/85 border border-sky-500/20 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" name="layer" data-capa="4" checked class="h-4 w-4 accent-indigo-400 rounded cursor-pointer" />
+                <span class="text-xs font-mono font-bold text-slate-100">Pista 4: Precipitación (San José)</span>
+              </label>
+              <span class="text-[10px] font-mono text-indigo-400">[Tecla 4]</span>
+            </div>
+            <div class="flex items-center gap-2 px-1">
+              <span class="text-[10px] font-mono text-slate-400">Vol</span>
+              <input type="range" id="volumenCapa4" min="0" max="100" value="60" class="w-full accent-indigo-400 cursor-pointer" />
+            </div>
+          </div>
+
+          <!-- Pista 5 -->
+          <div class="p-2.5 rounded-xl bg-slate-950/85 border border-sky-500/20 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" name="layer" data-capa="5" checked class="h-4 w-4 accent-lime-400 rounded cursor-pointer" />
+                <span class="text-xs font-mono font-bold text-slate-100">Pista 5: Vegetación NDVI</span>
+              </label>
+              <span class="text-[10px] font-mono text-lime-400">[Tecla 5]</span>
+            </div>
+            <div class="flex items-center gap-2 px-1">
+              <span class="text-[10px] font-mono text-slate-400">Vol</span>
+              <input type="range" id="volumenCapa5" min="0" max="100" value="70" class="w-full accent-lime-400 cursor-pointer" />
+            </div>
+          </div>
+
+        </div>
+      </fieldset>
+    </aside>
+
+    <!-- SECCIÓN INFERIOR: HISTORIAL Y COORDENADAS CON SCROLL LIBRE -->
+    <section aria-labelledby="history-heading" class="lg:col-span-12 panel-glass rounded-2xl p-6 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-sky-400">🕒</span>
+            <h2 id="history-heading" class="text-sm font-mono uppercase font-bold text-sky-300">Historial y Coordenadas de Satélites</h2>
+          </div>
+          <p class="text-xs text-sky-200/70">Monitoreo autónomo en tiempo real con actualización por telemetría</p>
+        </div>
+        <span class="px-3 py-1 rounded-md bg-slate-900 border border-sky-500/30 text-xs font-mono text-emerald-400 flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> Enlace Orbital: Estable
+        </span>
+      </div>
+
+      <!-- Contenedor con scroll vertical y horizontal libre -->
+      <div class="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-sky-500/20">
+        <table class="w-full text-left text-xs font-mono border-collapse">
+          <thead>
+            <tr class="border-b border-sky-500/20 text-slate-400 bg-slate-950/90 sticky top-0 z-10">
+              <th class="p-3">#</th>
+              <th class="p-3">O</th>
+              <th class="p-3">Capa / Métrica</th>
+              <th class="p-3">Ubicación / Estación</th>
+              <th class="p-3">Fuente Científica Oficial</th>
+              <th class="p-3">Variación (% Cambio)</th>
+              <th class="p-3">Estado Acústico</th>
+              <th class="p-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="metadata-table-body" class="divide-y divide-sky-950/60 text-slate-300">
+            <tr>
+              <td class="p-3">1</td>
+              <td class="p-3 text-amber-400">🌡️</td>
+              <td class="p-3 font-semibold text-amber-300">Temperatura</td>
+              <td class="p-3">San José, Costa Rica (Lat 9.93, Lon -84.08)</td>
+              <td class="p-3">NASA POWER API (T2M)</td>
+              <td id="meta-val-1" class="p-3 font-bold">+1.4%</td>
+              <td id="meta-state-1" class="p-3 text-emerald-400">Consonante</td>
+              <td class="p-3 text-sky-400 cursor-pointer hover:underline">👁 Ver</td>
+            </tr>
+            <tr>
+              <td class="p-3">2</td>
+              <td class="p-3 text-emerald-400">🌍</td>
+              <td class="p-3 font-semibold text-emerald-300">CO₂ Atmosférico (Actualizable)</td>
+              <td class="p-3">Mauna Loa Observatory, Hawái (Global)</td>
+              <td class="p-3">NOAA Global Monitoring Lab</td>
+              <td id="meta-val-2" class="p-3 font-bold">+3.2%</td>
+              <td id="meta-state-2" class="p-3 text-emerald-400">Consonante</td>
+              <td class="p-3 text-sky-400 cursor-pointer hover:underline">👁 Ver</td>
+            </tr>
+            <tr>
+              <td class="p-3">3</td>
+              <td class="p-3 text-sky-400">❄️</td>
+              <td class="p-3 font-semibold text-sky-300">Hielo Ártico</td>
+              <td class="p-3">Océano Ártico (Región Polar Norte)</td>
+              <td class="p-3">NSIDC (National Snow and Ice Data Center)</td>
+              <td id="meta-val-3" class="p-3 font-bold">-4.1%</td>
+              <td id="meta-state-3" class="p-3 text-emerald-400">Consonante</td>
+              <td class="p-3 text-sky-400 cursor-pointer hover:underline">👁 Ver</td>
+            </tr>
+            <tr>
+              <td class="p-3">4</td>
+              <td class="p-3 text-indigo-400">🌧️</td>
+              <td class="p-3 font-semibold text-indigo-300">Precipitación</td>
+              <td class="p-3">San José, Costa Rica (Lat 9.93, Lon -84.08)</td>
+              <td class="p-3">NASA POWER API (PRECTOTCORR)</td>
+              <td id="meta-val-4" class="p-3 font-bold">+0.8%</td>
+              <td id="meta-state-4" class="p-3 text-emerald-400">Consonante</td>
+              <td class="p-3 text-sky-400 cursor-pointer hover:underline">👁 Ver</td>
+            </tr>
+            <tr>
+              <td class="p-3">5</td>
+              <td class="p-3 text-lime-400">🌿</td>
+              <td class="p-3 font-semibold text-lime-300">Vegetación NDVI</td>
+              <td class="p-3">Cobertura Terrestre Global (Costa Rica)</td>
+              <td class="p-3">NASA MODIS Terra/Aqua</td>
+              <td id="meta-val-5" class="p-3 font-bold">-1.5%</td>
+              <td id="meta-state-5" class="p-3 text-emerald-400">Consonante</td>
+              <td class="p-3 text-sky-400 cursor-pointer hover:underline">👁 Ver</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="relative z-10 border-t border-sky-500/20 bg-slate-950/90 py-4 px-6 mt-12 text-xs font-mono text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span>🚀</span>
+        <span>Proyecto Himno de Jörð | Universidad Fidélitas • NASA Space Apps Challenge</span>
+      </div>
+      <div>
+        <span>Explorando datos. Cuidando nuestro planeta.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- SCRIPT DE FONDO ESTELAR ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.5 + 0.4,
+        speedX: (Math.random() - 0.5) * 0.15,
+        speedY: (Math.random() - 0.5) * 0.15,
+        alpha: Math.random() * 0.6 + 0.2
+      });
+    }
+
+    function animateBg() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#38bdf8';
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    // --- SINTETIZADOR CON CRONÓMETRO DE 30S EXACTOS Y PATRONES ORIGINALES ---
+    let eventos = [
+      { capa: 1, t: 0.0, frecuencia: 130.81, duracion: 2.0, porcBase: '+1.4%', valorPct: 52, peligro: false },
+      { capa: 2, t: 3.0, frecuencia: 196.00, duracion: 2.0, porcBase: '+3.2%', valorPct: 64, peligro: false },
+      { capa: 3, t: 6.0, frecuencia: 261.63, duracion: 2.0, porcBase: '-4.1%', valorPct: 70, peligro: false },
+      { capa: 4, t: 9.0, frecuencia: 329.63, duracion: 2.0, porcBase: '+0.8%', valorPct: 45, peligro: false },
+      { capa: 5, t: 12.0, frecuencia: 392.00, duracion: 2.5, porcBase: '-1.5%', valorPct: 58, peligro: false },
+      { capa: 1, t: 15.0, frecuencia: 261.63, duracion: 2.0, porcBase: '+1.4%', valorPct: 52, peligro: false },
+      { capa: 2, t: 18.0, frecuencia: 329.63, duracion: 2.0, porcBase: '+3.2%', valorPct: 64, peligro: false },
+      { capa: 3, t: 21.0, frecuencia: 392.00, duracion: 2.0, porcBase: '-4.1%', valorPct: 70, peligro: false },
+      { capa: 4, t: 24.0, frecuencia: 523.25, duracion: 2.0, porcBase: '+0.8%', valorPct: 45, peligro: false },
+      { capa: 5, t: 27.0, frecuencia: 392.00, duracion: 2.8, porcBase: '-1.5%', valorPct: 58, peligro: false }
+    ];
+
+    let contexto = null;
+    let gananciaMaestra = null;
+    let compresorMaster = null;
+    let pendientes = [];
+    let bucleTimer = null;
+    let capasActivas = [true, true, true, true, true];
+
+    function initAudio() {
+      if (!contexto) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        contexto = new AudioCtx();
+
+        compresorMaster = contexto.createDynamicsCompressor();
+        compresorMaster.threshold.setValueAtTime(-18, contexto.currentTime);
+        compresorMaster.knee.setValueAtTime(30, contexto.currentTime);
+        compresorMaster.ratio.setValueAtTime(12, contexto.currentTime);
+        compresorMaster.attack.setValueAtTime(0.003, contexto.currentTime);
+        compresorMaster.release.setValueAtTime(0.25, contexto.currentTime);
+
+        gananciaMaestra = contexto.createGain();
+        gananciaMaestra.gain.value = 0.85;
+
+        gananciaMaestra.connect(compresorMaster);
+        compresorMaster.connect(contexto.destination);
+      }
+      if (contexto.state === 'suspended') contexto.resume();
+    }
+
+    function dispararNota(e) {
+      if (!capasActivas[e.capa - 1]) return;
+      initAudio();
+
+      const sliderVal = document.getElementById(`volumenCapa${e.capa}`);
+      let nivelVolumen = sliderVal ? Number(sliderVal.value) / 100 : 0.7;
+
+      const anomaliaCO2Activa = eventos[1].peligro;
+
+      if (e.capa === 2 && anomaliaCO2Activa) {
+        nivelVolumen = 1.0;
+      }
+
+      const ahora = contexto.currentTime;
+      
+      let tipoOnda = 'sine';
+      if (e.capa === 2) {
+        tipoOnda = anomaliaCO2Activa ? 'sawtooth' : 'triangle';
+      } else if (e.capa === 5) {
+        tipoOnda = 'triangle';
+      }
+
+      const osc = contexto.createOscillator();
+      const gan = contexto.createGain();
+      const filtro = contexto.createBiquadFilter();
+
+      osc.type = tipoOnda;
+
+      let freqReal = e.frecuencia;
+      if (e.capa === 2 && anomaliaCO2Activa) {
+        freqReal = e.frecuencia * 1.45; 
+      }
+
+      osc.frequency.setValueAtTime(freqReal, ahora);
+
+      filtro.type = 'lowpass';
+      filtro.frequency.setValueAtTime(anomaliaCO2Activa && e.capa === 2 ? 3500 : 1800, ahora);
+
+      const volFinal = Math.min(1, Math.max(0.0, nivelVolumen));
+      
+      gan.gain.setValueAtTime(0.0001, ahora);
+      gan.gain.linearRampToValueAtTime(volFinal, ahora + 0.1);
+      gan.gain.exponentialRampToValueAtTime(0.0001, ahora + e.duracion + 0.2);
+
+      osc.connect(filtro);
+      filtro.connect(gan);
+      gan.connect(gananciaMaestra);
+
+      osc.start(ahora);
+      osc.stop(ahora + e.duracion + 0.3);
+
+      animarBarraPorcentaje(e);
+    }
+
+    function cancelarPendientes() {
+      for (const id of pendientes) clearTimeout(id);
+      pendientes = [];
+      if (bucleTimer) { clearTimeout(bucleTimer); bucleTimer = null; }
+    }
+
+    function reproducirDesde(desde = 0) {
+      initAudio();
+      cancelarPendientes();
+      if (eventos.length === 0) return;
+
+      for (const e of eventos) {
+        if (e.t < desde) continue;
+        const desfase = e.peligro && e.capa === 2 ? 120 : 0;
+        const espera = (e.t - desde) * 1000 + desfase;
+        pendientes.push(setTimeout(() => dispararNota(e), espera));
+      }
+
+      // CRONÓMETRO: Bucle exacto de 30 segundos
+      bucleTimer = setTimeout(() => {
+        if (isPlaying) reproducirDesde(0);
+      }, 30000);
+    }
+
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const btnStop = document.getElementById('btn-stop');
+    const liveDescription = document.getElementById('live-description');
+    const harmonyBadge = document.getElementById('harmony-badge');
+    const aiReportContent = document.getElementById('ai-report-content');
+    const layerCheckboxes = document.querySelectorAll('input[name="layer"]');
+    const btnToggleVoice = document.getElementById('btn-toggle-voice');
+
+    let isPlaying = false;
+    let guiaVozActiva = true;
+
+    function hablar(texto) {
+      if (!guiaVozActiva || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const mensaje = new SpeechSynthesisUtterance(texto);
+      mensaje.lang = 'es-ES';
+      mensaje.rate = 1.15;
+      window.speechSynthesis.speak(mensaje);
+    }
+
+    function actualizarInterfazAnomalias() {
+      const anomaliaActiva = eventos[1].peligro;
+
+      if (harmonyBadge) {
+        if (anomaliaActiva) {
+          harmonyBadge.textContent = '⚡ ADVERTENCIA: ¡PICO DE CO₂ AL +14.8%!';
+          harmonyBadge.className = 'text-xs font-mono font-bold px-3 py-1 rounded-full bg-rose-950/90 text-rose-300 border border-rose-500/70 shadow-[0_0_20px_rgba(244,63,94,0.5)] animate-pulse';
+        } else {
+          harmonyBadge.textContent = '● Estado: Óptimo (Consonante)';
+          harmonyBadge.className = 'text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
+        }
+      }
+
+      if (aiReportContent) {
+        if (anomaliaActiva) {
+          aiReportContent.innerHTML = `
+            <p class="text-rose-400 font-bold">🚨 ALERTA CRÍTICA NOAA: Variación extrema</p>
+            <p>• <strong class="text-slate-100">Porcentaje de Cambio:</strong> Pista 2 registra un incremento del +14.8%. La barra llega al tope absoluto en rojo.</p>
+            <p>• <strong class="text-slate-100">Respuesta Acústica:</strong> Modulación armónica alterada y desafinada.</p>
+          `;
+        } else {
+          aiReportContent.innerHTML = `
+            <p>• <strong class="text-slate-100">Estado General:</strong> Monitoreo constante sincronizado a cronómetro de 30s.</p>
+            <p>• <strong class="text-slate-100">Diagnóstico IA:</strong> Parámetros climáticos bajo control.</p>
+          `;
+        }
+      }
+
+      eventos.forEach(ev => {
+        const led = document.getElementById(`led-${ev.capa}`);
+        const metaState = document.getElementById(`meta-state-${ev.capa}`);
+        const metaVal = document.getElementById(`meta-val-${ev.capa}`);
+        const valCapa = document.getElementById(`val-capa-${ev.capa}`);
+        const barraCapa = document.getElementById(`bar-capa-${ev.capa}`);
+
+        if (ev.peligro) {
+          if (led) led.className = 'h-3 w-3 rounded-full bg-rose-500 shadow-[0_0_15px_#f43f5e] animate-ping mb-1';
+          if (metaState) {
+            metaState.textContent = '🚨 ¡ANOMALÍA +14.8%!';
+            metaState.className = 'p-3 font-bold text-rose-400 animate-pulse';
+          }
+          if (metaVal) metaVal.textContent = '+14.8% (¡ALERTA!)';
+          if (valCapa) valCapa.textContent = '+14.8%';
+          if (barraCapa) {
+            barraCapa.style.height = '100%';
+            barraCapa.className = 'w-full bg-rose-500 rounded-t-sm transition-all duration-300 shadow-[0_0_25px_#f43f5e] animate-pulse';
+          }
+        } else {
+          if (led) {
+            led.className = capasActivas[ev.capa - 1] 
+              ? 'h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1' 
+              : 'h-2.5 w-2.5 rounded-full bg-slate-600 mb-1';
+          }
+          if (metaState) {
+            metaState.textContent = 'Consonante';
+            metaState.className = 'p-3 text-emerald-400';
+          }
+          if (metaVal) metaVal.textContent = ev.porcBase;
+          if (valCapa) valCapa.textContent = ev.porcBase;
+          if (barraCapa && ev.capa === 2) {
+            barraCapa.style.height = `${ev.valorPct}%`;
+            barraCapa.className = 'w-full bg-emerald-400 rounded-t-sm transition-all duration-300 shadow-[0_0_15px_#34d399]';
+          }
+        }
+      });
+    }
+
+    function alternarAnomaliaPista2() {
+      const estadoActual = eventos[1].peligro;
+      eventos[1].peligro = !estadoActual;
+
+      if (eventos[1].peligro) {
+        liveDescription.textContent = '🚨 ¡ADVERTENCIA! Incremento crítico en Pista 2 al +14.8%.';
+        hablar('¡Advertencia! Variación crítica en pista 2.');
+      } else {
+        liveDescription.textContent = 'Porcentajes de cambio normalizados.';
+      }
+
+      actualizarInterfazAnomalias();
+      if (isPlaying) reproducirDesde(0);
+    }
+
+    // Intervalo de anomalía exactamente a los 15 segundos
+    setInterval(() => {
+      if (!isPlaying) return;
+      alternarAnomaliaPista2();
+    }, 15000);
+
+    function actualizarBarrasBase() {
+      layerCheckboxes.forEach((cb) => {
+        const numCapa = Number(cb.dataset.capa);
+        const barra = document.getElementById(`bar-capa-${numCapa}`);
+        const led = document.getElementById(`led-${numCapa}`);
+        const ev = eventos.find(e => e.capa === numCapa);
+
+        if (barra && !(numCapa === 2 && eventos[1].peligro)) {
+          barra.style.height = cb.checked ? `${ev.valorPct}%` : '15%';
+          barra.style.opacity = cb.checked ? '1' : '0.35';
+        }
+        if (led && !(numCapa === 2 && eventos[1].peligro)) {
+          led.className = cb.checked ? 'h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1' : 'h-2.5 w-2.5 rounded-full bg-slate-600 mb-1';
+        }
+      });
+    }
+
+    function animarBarraPorcentaje(e) {
+      const { capa, valorPct } = e;
+      const barra = document.getElementById(`bar-capa-${capa}`);
+      if (barra) {
+        if (capa === 2 && eventos[1].peligro) {
+          barra.style.height = '100%';
+          barra.className = 'w-full bg-rose-500 rounded-t-sm transition-all duration-300 shadow-[0_0_25px_#f43f5e] animate-pulse';
+          return;
+        }
+        barra.style.height = `${Math.min(100, valorPct + 12)}%`;
+        setTimeout(() => {
+          const cb = document.querySelector(`input[data-capa="${capa}"]`);
+          if (!(capa === 2 && eventos[1].peligro)) {
+            barra.style.height = cb && cb.checked ? `${valorPct}%` : '15%';
+          }
+        }, 500);
+      }
+    }
+
+    layerCheckboxes.forEach((cb) => {
+      const numCapa = Number(cb.dataset.capa);
+      cb.addEventListener('change', () => {
+        const activo = cb.checked;
+        capasActivas[numCapa - 1] = activo;
+        actualizarBarrasBase();
+
+        const textoMensaje = `Pista ${numCapa} ${activo ? 'Activada' : 'Desactivada'}`;
+        liveDescription.textContent = textoMensaje;
+        hablar(textoMensaje);
+
+        if (activo && isPlaying) {
+          const eventoCapa = eventos.find(ev => ev.capa === numCapa);
+          if (eventoCapa) dispararNota(eventoCapa);
+        }
+      });
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (['1', '2', '3', '4', '5'].includes(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const idx = Number(e.key) - 1;
+        const cb = layerCheckboxes[idx];
+        if (cb) {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event('change'));
+        }
+      }
+    });
+
+    btnPlayPause.addEventListener('click', () => {
+      isPlaying = true;
+      btnPlayPause.disabled = true;
+      btnPlayPause.classList.add('opacity-50', 'cursor-not-allowed');
+      btnStop.disabled = false;
+      btnStop.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+      btnStop.classList.add('bg-rose-500', 'hover:bg-rose-400', 'text-slate-950', 'cursor-pointer');
+
+      alternarAnomaliaPista2();
+      liveDescription.textContent = 'Reproduciendo himno con frecuencias originales y cronómetro de 30s.';
+      hablar('Reproduciendo himno climático.');
+    });
+
+    btnStop.addEventListener('click', () => {
+      isPlaying = false;
+      cancelarPendientes();
+      actualizarBarrasBase();
+
+      eventos[1].peligro = false;
+      actualizarInterfazAnomalias();
+
+      btnPlayPause.disabled = false;
+      btnPlayPause.classList.remove('opacity-50', 'cursor-not-allowed');
+      btnStop.disabled = true;
+      btnStop.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+      btnStop.classList.remove('bg-rose-500', 'hover:bg-rose-400', 'text-slate-950', 'cursor-pointer');
+
+      liveDescription.textContent = 'Sistema detenido.';
+      hablar('Sistema detenido.');
+    });
+
+    const tabViz = document.getElementById('tab-viz');
+    const tabData = document.getElementById('tab-data');
+    const tabAi = document.getElementById('tab-ai');
+    const viewViz = document.getElementById('view-visualization');
+    const viewData = document.getElementById('view-data');
+    const viewAi = document.getElementById('view-ai');
+
+    function cambiarPestaña(activa) {
+      tabViz.className = activa === 'viz' ? 'px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-mono text-xs font-bold shadow transition cursor-pointer' : 'px-3 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-800 font-mono text-xs border border-sky-500/20 transition cursor-pointer';
+      tabData.className = activa === 'data' ? 'px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-mono text-xs font-bold shadow transition cursor-pointer' : 'px-3 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-800 font-mono text-xs border border-sky-500/20 transition cursor-pointer';
+      tabAi.className = activa === 'ai' ? 'px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-mono text-xs font-bold shadow transition cursor-pointer' : 'px-3 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-slate-800 font-mono text-xs border border-sky-500/20 transition cursor-pointer';
+
+      viewViz.classList.toggle('hidden', activa !== 'viz');
+      viewData.classList.toggle('hidden', activa !== 'data');
+      viewAi.classList.toggle('hidden', activa !== 'ai');
+    }
+
+    tabViz.addEventListener('click', () => cambiarPestaña('viz'));
+    tabData.addEventListener('click', () => cambiarPestaña('data'));
+    tabAi.addEventListener('click', () => cambiarPestaña('ai'));
+
+    btnToggleVoice.addEventListener('click', () => {
+      guiaVozActiva = !guiaVozActiva;
+      btnToggleVoice.textContent = guiaVozActiva ? 'Voz: Activa' : 'Voz: Silenciada';
+      if (guiaVozActiva) hablar('Guía de voz activada.');
+    });
+  </script>
+</body>
+</html>
