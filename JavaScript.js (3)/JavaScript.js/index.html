@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth Information JukeBox</title>
+</head>
+
+<body>
+
+    <h1>Earth Information JukeBox</h1>
+
+    <p id="estado">JukeBox Detenido</p>
+
+    <button id="botonReproducir" type="button">
+        Reproducir
+    </button>
+
+    <button id="botonDetener" type="button" disabled>
+        Detener
+    </button>
+
+    <h2>Control de capas</h2>
+
+    <button id="btnCapa1" type="button">Capa 1</button>
+    <button id="btnCapa2" type="button">Capa 2</button>
+    <button id="btnCapa3" type="button">Capa 3</button>
+    <button id="btnCapa4" type="button">Capa 4</button>
+    <button id="btnCapa5" type="button">Capa 5</button>
+
+    <h2>Control de volumen</h2>
+
+    <label for="volumenCapa1">Volumen Capa 1</label>
+    <input type="range" id="volumenCapa1" min="0" max="100" value="40">
+
+    <br>
+
+    <label for="volumenCapa2">Volumen Capa 2</label>
+    <input type="range" id="volumenCapa2" min="0" max="100" value="40">
+
+    <br>
+
+    <label for="volumenCapa3">Volumen Capa 3</label>
+    <input type="range" id="volumenCapa3" min="0" max="100" value="40">
+
+    <br>
+
+    <label for="volumenCapa4">Volumen Capa 4</label>
+    <input type="range" id="volumenCapa4" min="0" max="100" value="40">
+
+    <br>
+
+    <label for="volumenCapa5">Volumen Capa 5</label>
+    <input type="range" id="volumenCapa5" min="0" max="100" value="40">
+
+    <!-- Motor de audio -->
+    <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
+
+    <script src="datos_co2.js"></script>
+    <script src="umbrales.js"></script>
+    <script src="sintetizador.js"></script>
+    <script src="generador_eventos.js"></script>   <!-- CAMBIO: antes de capas.js -->
+    <script src="capas.js"></script>
+    <script src="JukeBox.js"></script>
+
+</body>
+</html>
